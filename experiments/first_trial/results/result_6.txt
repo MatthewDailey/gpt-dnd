@@ -1,1 +1,5 @@
-You can make a Nature check to see if you know anything about the area. Roll a d20 and add your Nature skill modifier to the result.
+As a player, your character would know what they have learned through their backstory and any information they may have gathered through exploration or interaction with NPCs. 
+
+If you're asking me as the Dungeon Master, I can provide you with some information about the area you're in. What kind of area are you in? Is it a town, a forest, a dungeon, or something else? 
+
+Once I have a better understanding of the area, I can give you more information about what your character might know.

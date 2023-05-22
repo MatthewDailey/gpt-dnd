@@ -27,3 +27,11 @@ Do I know anything about the area?
 ==SEP==
 
 17
+
+==SEP==
+
+Head to the forest to look for the girl.
+
+==SEP==
+
+I cast detect magic on the stream.
