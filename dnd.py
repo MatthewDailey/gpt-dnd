@@ -68,7 +68,7 @@ def send_prompts(args):
 def get_input_and_write_to_prompt(args):
     user_action = input("\n\n")
     with open(args.dir + "/prompt.txt", "a") as f:
-        f.write(SEPARATOR + "\n\n" + user_action)
+        f.write("\n\n" + SEPARATOR + "\n\n" + user_action)
 
 
 def speak_and_print(dir, s):

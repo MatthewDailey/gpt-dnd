@@ -6,14 +6,24 @@ Yes we're ready play.
 
 ==SEP== 
 
-We have our classes. We have a dwarf cleric, a half-orc cleric, a halfing rogue and a human fighter.==SEP==
+We have our classes. We have a dwarf cleric, a half-orc cleric, a halfing rogue and a human fighter.
 
-Say to the man, "Who took her?"==SEP==
+==SEP==
 
-Yes we'll help find your daughter. What did she look like?==SEP==
+Say to the man, "Who took her?"
 
-Look more closely at the peice of paper.==SEP==
+==SEP==
 
-Do I know anything about the area?==SEP==
+Yes we'll help find your daughter. What did she look like?
+
+==SEP==
+
+Look more closely at the peice of paper.
+
+==SEP==
+
+Do I know anything about the area?
+
+==SEP==
 
 17
