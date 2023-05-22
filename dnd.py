@@ -7,6 +7,9 @@ import joblib
 memory = joblib.Memory(location=".cached_data", verbose=1)
 SEPARATOR = "==SEP=="
 
+openai.organization = "org-3676qVMg5QssbgHBYPtoL1DT"
+openai.api_key = os.environ["PERSONAL_OPENAI_API_KEY"]
+
 
 @memory.cache
 def openai_request(messages, model, temperature, cache_buster=None):
@@ -15,7 +18,7 @@ def openai_request(messages, model, temperature, cache_buster=None):
         model=model,
         temperature=temperature,
         messages=messages,
-        max_tokens=4096,
+        # max_tokens=4096,
     )
     print(f"Total time: {time.time() - start}")
     return result
@@ -25,14 +28,11 @@ def main(args):
     if "PERSONAL_OPENAI_API_KEY" not in os.environ:
         raise ValueError("OPENAI_API_KEY not set")
 
-    with open(args.prompt) as f:
+    with open(args.dir + "/prompt.txt") as f:
         prompts = f.read().split(SEPARATOR)
 
-    with open(args.sys_prompt) as f:
+    with open(args.dir + "/system.txt") as f:
         sys_prompt = f.read()
-
-    if not os.access(args.prompt_dir, os.W_OK):
-        raise ValueError(f"Prompt directory {args.prompt_dir} is not writable")
 
     messages = [
         {
@@ -55,7 +55,7 @@ def main(args):
         )
 
         # write result message content to file in prompt directory
-        out_dir = args.output_dir
+        out_dir = args.dir + "/results"
         os.makedirs(out_dir, exist_ok=True)
         response_message = result["choices"][0]["message"]
         with open(os.path.join(out_dir, f"result_{i}.txt"), "w") as f:
@@ -71,21 +71,14 @@ if __name__ == "__main__":
         "-t", "--temperature", type=float, default=0.0, help="The temperature value"
     )
     parser.add_argument(
-        "-m", "--model", type=str, default="gpt-4", help="The model name"
+        "-m", "--model", type=str, default="gpt-3.5-turbo", help="The model name"
     )
     parser.add_argument(
-        "-s",
-        "--sys-prompt",
+        "-d",
+        "--dir",
         type=str,
         required=True,
-        help="Id (aka file-name) of the system prompt",
-    )
-    parser.add_argument(
-        "-p",
-        "--prompt",
-        type=str,
-        required=True,
-        help="File where user prompts are stored",
+        help="Dir where prompt.txt, system.txt and output will live.",
     )
     parser.add_argument(
         "-k",
@@ -93,13 +86,6 @@ if __name__ == "__main__":
         type=bool,
         default=False,
         help="Skip the cache and make a new request",
-    )
-    parser.add_argument(
-        "-o",
-        "--output-dir",
-        type=str,
-        required=True,
-        help="Directory where the results are stored",
     )
 
     main(parser.parse_args())

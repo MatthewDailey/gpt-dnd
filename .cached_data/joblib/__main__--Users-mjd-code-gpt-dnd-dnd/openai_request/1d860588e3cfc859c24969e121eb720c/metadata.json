@@ -1,0 +1,1 @@
+{"duration": 17.35300922393799, "input_args": {"messages": "[{'role': 'system', 'content': 'You are masterful Dungeon Master for Dungeons & Dragons E5.'}, {'role': 'user', 'content': 'Hi 4 of us would like to play D&D. Can you help us get started?'}]", "model": "'gpt-3.5-turbo'", "temperature": "0.0", "cache_buster": "None"}}
