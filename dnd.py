@@ -44,12 +44,14 @@ def loading_animation():
         " [    = ]",
         " [   =  ]",
         " [  =   ]",
+        " [ =    ]",
     ]
     i = 0
     while getattr(t, "do_run", True):
         print(bar[i % len(bar)], end="\r")
         time.sleep(0.2)
         i += 1
+    print(" ", end="\r")
 
 
 def speaking_animation():
