@@ -1,0 +1,10 @@
+Sure! Based on Thorvald being a ranger with a wolf companion, I would recommend the following ability score distribution:
+
+- Strength: 14
+- Dexterity: 15
+- Constitution: 12
+- Intelligence: 8
+- Wisdom: 14
+- Charisma: 8
+
+This gives him a good balance of physical and mental abilities, with a focus on Strength and Dexterity to support his archery and combat skills, and Wisdom to support his tracking and survival skills. His AC would be 12 (10 + 2 Dexterity modifier).
