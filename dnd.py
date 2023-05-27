@@ -5,8 +5,10 @@ import sys
 import argparse
 import joblib
 import gtts
+from mutagen.mp3 import MP3
 from playsound import playsound
 import threading
+import time
 
 memory = joblib.Memory(location=".cached_data", verbose=0)
 SEPARATOR = "==SEP=="
@@ -119,6 +121,19 @@ def get_input_and_write_to_prompt(args):
     print("\n")
 
 
+def print_slowly(text, duration):
+    length = len(text)
+    pause_time = float(duration) / length
+
+    for char in text:
+        print(char, end="", flush=True)
+        time.sleep(pause_time)
+
+
+def play_audio(path):
+    playsound(path)
+
+
 def print_and_speak_with_loading_anim(args):
     t1 = threading.Thread(target=loading_animation)
     t1.start()
@@ -131,20 +146,18 @@ def print_and_speak_with_loading_anim(args):
         return
 
     tts = gtts.gTTS(result, lang="en-uk", tld="co.uk")
-
     tts.save(args.dir + "current.mp3")
+
+    duration = MP3(args.dir + "current.mp3").info.length
 
     t1.do_run = False
     t1.join()
-    # print("")
 
-    t2 = threading.Thread(target=speaking_animation)
+    t2 = threading.Thread(target=play_audio, args=(args.dir + "current.mp3",))
     t2.start()
-    playsound(args.dir + "current.mp3")
+    print_slowly(result, duration)
     t2.do_run = False
     t2.join()
-
-    print(result)
 
 
 def main(args):
