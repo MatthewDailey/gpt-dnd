@@ -35,3 +35,7 @@ Head to the forest to look for the girl.
 ==SEP==
 
 I cast detect magic on the stream.
+
+==SEP==
+
+what young girl?

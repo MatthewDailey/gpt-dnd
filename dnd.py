@@ -1,6 +1,7 @@
 import openai
 import os
 import time
+import sys
 import argparse
 import joblib
 import gtts
@@ -105,16 +106,29 @@ def send_prompts(args):
 
 
 def get_input_and_write_to_prompt(args):
-    user_action = input("\n\n")
+    print("\n\n>>> ", end="")
+    user_action = sys.stdin.readline()
+    with open(args.dir + "/prompt.txt", "r") as f:
+        is_empty = len(f.read()) == 0
+
     with open(args.dir + "/prompt.txt", "a") as f:
-        f.write("\n\n" + SEPARATOR + "\n\n" + user_action)
-    print("\n\n")
+        if is_empty:
+            f.write(user_action)
+        else:
+            f.write("\n\n" + SEPARATOR + "\n\n" + user_action)
+    print("\n")
 
 
 def print_and_speak_with_loading_anim(args):
     t1 = threading.Thread(target=loading_animation)
     t1.start()
-    result = send_prompts(args)
+    try:
+        result = send_prompts(args)
+    except Exception as e:
+        print(e)
+        t1.do_run = False
+        t1.join()
+        return
 
     tts = gtts.gTTS(result, lang="en-uk")
     tts.save(args.dir + "current.mp3")
@@ -135,6 +149,10 @@ def print_and_speak_with_loading_anim(args):
 def main(args):
     if "PERSONAL_OPENAI_API_KEY" not in os.environ:
         raise ValueError("OPENAI_API_KEY not set")
+
+    with open(args.dir + "/prompt.txt") as f:
+        if len(f.read()) == 0:
+            get_input_and_write_to_prompt(args)
 
     print_and_speak_with_loading_anim(args)
 
