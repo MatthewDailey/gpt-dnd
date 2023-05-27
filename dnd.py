@@ -130,7 +130,8 @@ def print_and_speak_with_loading_anim(args):
         t1.join()
         return
 
-    tts = gtts.gTTS(result, lang="en-uk")
+    tts = gtts.gTTS(result, lang="en-uk", tld="co.uk")
+
     tts.save(args.dir + "current.mp3")
 
     t1.do_run = False
