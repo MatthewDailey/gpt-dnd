@@ -1,1 +1,46 @@
-Sure, I can create some basic characters for you. What classes would you like them to be?
+Great! Here are the starter character sheets for each of your characters:
+
+**Human Fighter**
+- Name: Marcus
+- Race: Human
+- Class: Fighter
+- Armor Class (AC): 16
+- Ability Scores: 
+  - Strength: 16 (+3)
+  - Dexterity: 14 (+2)
+  - Constitution: 14 (+2)
+  - Intelligence: 10 (+0)
+  - Wisdom: 12 (+1)
+  - Charisma: 8 (-1)
+- Proficiencies: Athletics, Intimidation, Perception, Survival
+- Backstory: Marcus grew up in a small village on the outskirts of a kingdom. He was trained in combat by his father, who was a veteran soldier. Marcus left his village to seek adventure and make a name for himself.
+
+**Dwarf Cleric**
+- Name: Thorgar
+- Race: Dwarf
+- Class: Cleric
+- Armor Class (AC): 18
+- Ability Scores: 
+  - Strength: 14 (+2)
+  - Dexterity: 8 (-1)
+  - Constitution: 16 (+3)
+  - Intelligence: 10 (+0)
+  - Wisdom: 18 (+4)
+  - Charisma: 8 (-1)
+- Proficiencies: Medicine, Religion, Insight, Persuasion
+- Backstory: Thorgar is a devout follower of Moradin, the dwarven god of creation and patron of artisans, especially blacksmiths. He left his clan to spread the word of Moradin and help those in need.
+
+**Elf Rogue**
+- Name: Sariel
+- Race: Elf
+- Class: Rogue
+- Armor Class (AC): 14
+- Ability Scores: 
+  - Strength: 10 (+0)
+  - Dexterity: 18 (+4)
+  - Constitution: 12 (+1)
+  - Intelligence: 14 (+2)
+  - Wisdom: 8 (-1)
+  - Charisma: 16 (+3)
+- Proficiencies: Acrobatics, Deception, Perception, Stealth
+- Backstory: Sariel grew up in a wealthy elven family, but she was always drawn to the thrill of adventure and the excitement of the unknown. She left her family to become a rogue and make her own way in the world.

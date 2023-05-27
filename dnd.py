@@ -152,6 +152,7 @@ def main(args):
 
     with open(args.dir + "/prompt.txt") as f:
         if len(f.read()) == 0:
+            print("Welcome to Dungeons & Dragons! Say 'hi' to get started.")
             get_input_and_write_to_prompt(args)
 
     print_and_speak_with_loading_anim(args)
