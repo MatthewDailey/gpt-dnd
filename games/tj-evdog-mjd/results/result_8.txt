@@ -1,0 +1,10 @@
+Sure! Based on your character being a powerful witch, I would recommend the following ability score distribution:
+
+- Strength: 8
+- Dexterity: 14 (+2 racial bonus = 16)
+- Constitution: 10
+- Intelligence: 15 (+1 racial bonus = 16)
+- Wisdom: 12
+- Charisma: 8
+
+This gives you a good balance of physical and mental abilities, with a focus on Dexterity and Intelligence to support your spellcasting. Your AC would be 12 (10 + 2 Dexterity modifier).
