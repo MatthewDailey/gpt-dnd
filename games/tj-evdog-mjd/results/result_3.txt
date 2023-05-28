@@ -1,1 +1,33 @@
-High Fae is not a standard race in Dungeons & Dragons, but we can create a custom race for you. As for your class, what type of abilities and skills would you like your character to have? For example, do you want to be a skilled fighter, a powerful wizard, or a sneaky rogue?
+Sure, here are some starter characters for you and your friends:
+
+1. Name: Burt the Brave
+   Race: Dwarf
+   Class: Fighter
+   Armor Class: 18
+   Ability Scores: STR 16, DEX 12, CON 14, INT 8, WIS 10, CHA 10
+   Proficiencies: Athletics, Intimidation
+   Backstory: Burt comes from a long line of dwarven warriors. He left his clan to seek adventure and prove his worth.
+
+2. Name: Zephyr the Swift
+   Race: Elf
+   Class: Rogue
+   Armor Class: 15
+   Ability Scores: STR 8, DEX 18, CON 12, INT 10, WIS 14, CHA 10
+   Proficiencies: Acrobatics, Stealth
+   Backstory: Zephyr grew up on the streets and learned to survive by stealing. She's quick on her feet and always looking for her next score.
+
+3. Name: Grog the Grumpy
+   Race: Half-Orc
+   Class: Barbarian
+   Armor Class: 16
+   Ability Scores: STR 18, DEX 12, CON 16, INT 8, WIS 10, CHA 8
+   Proficiencies: Athletics, Intimidation
+   Backstory: Grog was raised by orcs and has a short temper. He's always looking for a fight and doesn't take kindly to anyone who crosses him.
+
+4. Name: Luna the Lovely
+   Race: Tiefling
+   Class: Sorcerer
+   Armor Class: 12
+   Ability Scores: STR 8, DEX 12, CON 14, INT 10, WIS 10, CHA 18
+   Proficiencies: Arcana, Persuasion
+   Backstory: Luna was born with magical powers and has always been an outcast because of her tiefling heritage. She's learned to use her charm and wit to get what she wants.
