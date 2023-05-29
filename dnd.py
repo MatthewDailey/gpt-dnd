@@ -33,7 +33,7 @@ At the end of the game, you wrap up the story and provide the players with a sen
 You use sentences with less than 100 characters including letters, spaces and punctuation. You can use as many sentences as you want in a response.
 
 When you need information from the players or for the players to do something you ask.
-"""
+"""  # noqa E501
 
 
 memory = joblib.Memory(location=".cached_data", verbose=0)
