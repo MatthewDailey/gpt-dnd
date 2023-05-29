@@ -183,19 +183,25 @@ def print_and_speak_with_loading_anim(args):
         t1.join()
         return
 
-    tts = gtts.gTTS(result, lang="en-uk", tld="co.uk")
-    tts.save(args.dir + "/current.mp3")
+    # 50th of a second per character by default.
+    duration = len(result) / 50
 
-    duration = MP3(args.dir + "current.mp3").info.length
+    if args.audio:
+        tts = gtts.gTTS(result, lang="en-uk", tld="co.uk")
+        audio_file = args.dir + "/current.mp3"
+        tts.save(audio_file)
+        duration = MP3(audio_file).info.length
+        t2 = threading.Thread(target=play_audio, args=(audio_file,))
+        t2.start()
 
     t1.do_run = False
     t1.join()
 
-    t2 = threading.Thread(target=play_audio, args=(args.dir + "current.mp3",))
-    t2.start()
     print_slowly(result, duration)
-    t2.do_run = False
-    t2.join()
+
+    if args.audio:
+        t2.do_run = False
+        t2.join()
 
 
 def main(args):
@@ -244,6 +250,13 @@ if __name__ == "__main__":
         type=bool,
         default=False,
         help="Run continuously, waiting for user input",
+    )
+    parser.add_argument(
+        "-a",
+        "--audio",
+        type=bool,
+        default=False,
+        help="Play audio of the response",
     )
 
     main(parser.parse_args())
