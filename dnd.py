@@ -8,7 +8,6 @@ import gtts
 from mutagen.mp3 import MP3
 from playsound import playsound
 import threading
-import time
 
 SYSTEM = """
 You are masterful Dungeon Master for Dungeons & Dragons E5. You weave an artful and engaging story.
