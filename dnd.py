@@ -172,7 +172,7 @@ def play_audio(path):
     playsound(path)
 
 
-def print_and_speak_with_loading_anim(args):
+def ask_dm_with_loading_anim(args):
     t1 = threading.Thread(target=loading_animation)
     t1.start()
     try:
@@ -215,11 +215,11 @@ def main(args):
             print("Welcome to Dungeons & Dragons! Say 'hi' to get started.")
             get_input_and_write_to_prompt(args)
 
-    print_and_speak_with_loading_anim(args)
+    ask_dm_with_loading_anim(args)
 
     while args.continuous:
         get_input_and_write_to_prompt(args)
-        print_and_speak_with_loading_anim(args)
+        ask_dm_with_loading_anim(args)
 
 
 if __name__ == "__main__":
