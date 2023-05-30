@@ -1,2 +1,5 @@
 .venv-dnd
 .cached_data
+.DS_Store
+games
+experiments

@@ -2,8 +2,10 @@
 
 This repo is a toolkit for running a D&D campaign
 
-Goal:
+## Setup
 
--   GPT to get adventure
--   voice audio from the DM
--   just open a terminal and type back and forth.
+Run `./setup.sh`
+
+## Future
+
+Speech-to-text for talking to gpt https://towardsdatascience.com/easy-speech-to-text-with-python-3df0d973b426
