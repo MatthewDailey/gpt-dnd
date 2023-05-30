@@ -13,5 +13,4 @@ source .venv-dnd/bin/activate
 # https://stackoverflow.com/questions/51373063/pip3-bad-interpreter-no-such-file-or-directory
 python -m pip install -r requirements.txt
 
-# ffmpeg necessray for ElevenLabs
-brew install ffmpeg
+echo "You will need to set 2 environment variables: PERSONAL_OPENAI_API_KEY from OpenAi (https://platform.openai.com) and ELEVEN_LABS_API_KEY from Eleven Labs (https://docs.elevenlabs.io/welcome/introduction) both of which are free to set up." 
