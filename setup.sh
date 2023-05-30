@@ -12,3 +12,6 @@ source .venv-dnd/bin/activate
 # note: prefer `python -m pip` to `pip` directly
 # https://stackoverflow.com/questions/51373063/pip3-bad-interpreter-no-such-file-or-directory
 python -m pip install -r requirements.txt
+
+# ffmpeg necessray for ElevenLabs
+brew install ffmpeg

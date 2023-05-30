@@ -34,6 +34,7 @@ prompt-toolkit==3.0.38
 ptyprocess==0.7.0
 pure-eval==0.2.2
 pydantic==1.10.8
+pygame==2.4.0
 Pygments==2.15.1
 pyobjc==9.1.1
 pyobjc-core==9.1.1

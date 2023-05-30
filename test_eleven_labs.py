@@ -1,9 +1,16 @@
+from elevenlabs import set_api_key, voices, play, generate
 import os
-from elevenlabs import set_api_key, Models
 
-print(os.environ["ELEVEN_LABS_API_KEY"])
 set_api_key(os.environ["ELEVEN_LABS_API_KEY"])
 
-models = Models.from_api()
+vs = voices()
+for v in vs:
+    print(v)
 
-print(models)
+audio = generate(
+    text="Hi! My name is Bella, nice to meet you!",
+    voice="Bella",
+    model="eleven_monolingual_v1",
+)
+
+play(audio)
