@@ -8,7 +8,10 @@ import gtts
 from mutagen.mp3 import MP3
 from playsound import playsound
 import threading
-from elevenlabs import set_api_key, play, generate
+from elevenlabs import set_api_key, generate
+
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
+import pygame  # noqa: E402
 
 SYSTEM = """
 You are masterful Dungeon Master for Dungeons & Dragons E5. You weave an artful and engaging story.
@@ -189,7 +192,30 @@ def tts_elevenlabs(text, save_to_path):
     with open(save_to_path, "wb") as binary_file:
         binary_file.write(audio)
     return MP3(save_to_path).info.length
-    # play(audio)
+
+
+MUSIC_VOL = 0.7
+LOW_MUSIC_VOL = 0.3
+
+
+def start_background_music():
+    pygame.init()
+    pygame.mixer.init()
+    pygame.mixer.music.load("the-adventure-begins.mp3")
+    pygame.mixer.music.set_volume(MUSIC_VOL)
+    pygame.mixer.music.play()
+
+
+def fade_music_out():
+    while pygame.mixer.music.get_volume() > LOW_MUSIC_VOL:
+        pygame.mixer.music.set_volume(pygame.mixer.music.get_volume() - 0.1)
+        time.sleep(0.1)
+
+
+def fade_music_in():
+    while pygame.mixer.music.get_volume() < MUSIC_VOL:
+        pygame.mixer.music.set_volume(pygame.mixer.music.get_volume() + 0.1)
+        time.sleep(0.1)
 
 
 def ask_dm_with_loading_anim(args):
@@ -205,10 +231,11 @@ def ask_dm_with_loading_anim(args):
 
     # 50th of a second per character by default.
     duration = len(result) / 50
-    audio_file = args.dir + "/current.mp3"
 
     if args.audio:
+        audio_file = args.dir + "/current.mp3"
         duration = tts_elevenlabs(result, audio_file)
+        fade_music_out()
         t2 = threading.Thread(target=play_audio, args=(audio_file,))
         t2.start()
 
@@ -218,6 +245,7 @@ def ask_dm_with_loading_anim(args):
     print_slowly(result, duration)
 
     if args.audio:
+        fade_music_in()
         t2.do_run = False
         t2.join()
 
@@ -225,6 +253,9 @@ def ask_dm_with_loading_anim(args):
 def main(args):
     if "PERSONAL_OPENAI_API_KEY" not in os.environ:
         raise ValueError("OPENAI_API_KEY not set")
+
+    if args.audio:
+        start_background_music()
 
     set_up_defaults(args.dir)
 
