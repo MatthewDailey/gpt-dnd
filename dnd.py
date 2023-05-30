@@ -8,6 +8,7 @@ import gtts
 from mutagen.mp3 import MP3
 from playsound import playsound
 import threading
+from elevenlabs import set_api_key, play, generate
 
 SYSTEM = """
 You are masterful Dungeon Master for Dungeons & Dragons E5. You weave an artful and engaging story.
@@ -41,6 +42,7 @@ SEPARATOR = "==SEP=="
 
 openai.organization = "org-3676qVMg5QssbgHBYPtoL1DT"
 openai.api_key = os.environ["PERSONAL_OPENAI_API_KEY"]
+set_api_key(os.environ["ELEVEN_LABS_API_KEY"])
 
 
 @memory.cache
@@ -172,6 +174,24 @@ def play_audio(path):
     playsound(path)
 
 
+def tts_gtts(text, save_to_path):
+    tts = gtts.gTTS(text, lang="en-uk", tld="co.uk")
+    tts.save(save_to_path)
+    return MP3(save_to_path).info.length
+
+
+def tts_elevenlabs(text, save_to_path):
+    audio = generate(
+        text=text,
+        voice="Bella",
+        model="eleven_monolingual_v1",
+    )
+    with open(save_to_path, "wb") as binary_file:
+        binary_file.write(audio)
+    return MP3(save_to_path).info.length
+    # play(audio)
+
+
 def ask_dm_with_loading_anim(args):
     t1 = threading.Thread(target=loading_animation)
     t1.start()
@@ -185,12 +205,10 @@ def ask_dm_with_loading_anim(args):
 
     # 50th of a second per character by default.
     duration = len(result) / 50
+    audio_file = args.dir + "/current.mp3"
 
     if args.audio:
-        tts = gtts.gTTS(result, lang="en-uk", tld="co.uk")
-        audio_file = args.dir + "/current.mp3"
-        tts.save(audio_file)
-        duration = MP3(audio_file).info.length
+        duration = tts_elevenlabs(result, audio_file)
         t2 = threading.Thread(target=play_audio, args=(audio_file,))
         t2.start()
 
