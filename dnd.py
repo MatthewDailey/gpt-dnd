@@ -13,7 +13,7 @@ from elevenlabs import set_api_key, generate
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 import pygame  # noqa: E402
 
-SYSTEM = """
+SYSTEM_PROMPT = """
 You are masterful Dungeon Master for Dungeons & Dragons E5. You weave an artful and engaging story.
 
 As the Dungeon Master, you begin by setting the scene for the players. You describe the world they are in, the setting, and any important details they need to know. You then introduce the main quest or objective for the players to complete.
@@ -108,7 +108,7 @@ def set_up_defaults(dir):
             f.write("")
     if not os.path.exists(dir + "/system.txt"):
         with open(dir + "/system.txt", "w") as f:
-            f.write(SYSTEM)
+            f.write(SYSTEM_PROMPT)
 
 
 def send_prompts(args):
@@ -118,10 +118,18 @@ def send_prompts(args):
     with open(args.dir + "/system.txt") as f:
         sys_prompt = f.read()
 
+    with open(args.dir + "/story.txt") as f:
+        story = f.read()
+
     messages = [
         {
             "role": "system",
-            "content": sys_prompt,
+            "content": (
+                sys_prompt
+                + "\n\n Here is the outline for the story. The player is not aware of"
+                " it and you reveal it peice by peice:"
+                + story
+            ),
         }
     ]
 
@@ -250,6 +258,28 @@ def ask_dm_with_loading_anim(args):
         t2.join()
 
 
+STORY_PROMPT = (
+    "Write the overview of a Dungeons & Dragons campaign. Include lots of rich details,"
+    " a key objective and climatic final showdown."
+)
+
+
+def generate_story(args):
+    if not os.path.exists(args.dir + "/story.txt"):
+        messages = [
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT,
+            },
+            {"role": "user", "content": STORY_PROMPT},
+        ]
+
+        result = openai_request(messages, args.model, args.temperature)
+        response_message = result["choices"][0]["message"]
+        with open(args.dir + "/story.txt", "w") as f:
+            f.write(response_message["content"])
+
+
 def main(args):
     if "PERSONAL_OPENAI_API_KEY" not in os.environ:
         raise ValueError("OPENAI_API_KEY not set")
@@ -258,6 +288,7 @@ def main(args):
         start_background_music()
 
     set_up_defaults(args.dir)
+    generate_story(args)
 
     with open(args.dir + "/prompt.txt") as f:
         if len(f.read()) == 0:
