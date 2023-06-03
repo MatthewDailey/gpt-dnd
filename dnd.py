@@ -62,11 +62,8 @@ def openai_request(messages, model, temperature, cache_buster=None):
     return result
 
 
-def loading_animation():
-    import time
-
-    t = threading.currentThread()
-    bar = [
+def loading_animation(
+    bar=[
         " [=     ]",
         " [ =    ]",
         " [  =   ]",
@@ -78,12 +75,16 @@ def loading_animation():
         " [  =   ]",
         " [ =    ]",
     ]
+):
+    import time
+
+    t = threading.currentThread()
     i = 0
     while getattr(t, "do_run", True):
         print(bar[i % len(bar)], end="\r")
         time.sleep(0.2)
         i += 1
-    print(" ", end="\r")
+    print(len(bar[0]) * " ", end="\r")
 
 
 def speaking_animation():
@@ -261,29 +262,51 @@ def ask_dm_with_loading_anim(args):
 
 def generate_story(args):
     if not os.path.exists(args.dir + "/story.txt"):
-        messages = [
-            {
-                "role": "system",
-                "content": (
-                    "You are masterful Dungeon Master for Dungeons & Dragons E5. You"
-                    " weave an artful and engaging story."
-                ),
+        t1 = threading.Thread(
+            target=loading_animation,
+            kwargs={
+                "bar": [
+                    " Writing your story...",
+                    " Writing your story.. ",
+                    " Writing your story.  ",
+                    " Writing your story   ",
+                    " Writing your story.  ",
+                    " Writing your story.. ",
+                ],
             },
-            {
-                "role": "user",
-                "content": (
-                    "Write the overview of a Dungeons & Dragons campaign. Include lots"
-                    " of rich details, a key objective and climatic final showdown."
-                ),
-            },
-        ]
-
-        result = openai_request(
-            messages, args.model, 0.7, cache_buster=random.randint(0, 100)
         )
-        response_message = result["choices"][0]["message"]
-        with open(args.dir + "/story.txt", "w") as f:
-            f.write(response_message["content"])
+        t1.start()
+        try:
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are masterful Dungeon Master for Dungeons & Dragons E5."
+                        " You weave an artful and engaging story."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        "Write the overview of a Dungeons & Dragons campaign. Include"
+                        " lots of rich cinematic details. \n\nThe story description"
+                        " should include the following sections:\n- A title\n- An"
+                        " overview of the story\n- A description of the setting\n- A"
+                        " description of the key non-player characters\n- A key"
+                        " objective for the players\n- An idea for a climactic scene\n"
+                    ),
+                },
+            ]
+
+            result = openai_request(
+                messages, args.model, 0.7, cache_buster=random.randint(0, 100)
+            )
+            response_message = result["choices"][0]["message"]
+            with open(args.dir + "/story.txt", "w") as f:
+                f.write(response_message["content"])
+        finally:
+            t1.do_run = False
+            t1.join()
 
 
 def main(args):
