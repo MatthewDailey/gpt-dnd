@@ -1,3 +1,4 @@
+import random
 import openai
 import os
 import time
@@ -126,8 +127,8 @@ def send_prompts(args):
             "role": "system",
             "content": (
                 sys_prompt
-                + "\n\n Here is the outline for the story. The player is not aware of"
-                " it and you reveal it peice by peice:"
+                + "\n\n Here is the outline for the story. Players will slowly discover"
+                " more and more detail:"
                 + story
             ),
         }
@@ -258,23 +259,28 @@ def ask_dm_with_loading_anim(args):
         t2.join()
 
 
-STORY_PROMPT = (
-    "Write the overview of a Dungeons & Dragons campaign. Include lots of rich details,"
-    " a key objective and climatic final showdown."
-)
-
-
 def generate_story(args):
     if not os.path.exists(args.dir + "/story.txt"):
         messages = [
             {
                 "role": "system",
-                "content": SYSTEM_PROMPT,
+                "content": (
+                    "You are masterful Dungeon Master for Dungeons & Dragons E5. You"
+                    " weave an artful and engaging story."
+                ),
             },
-            {"role": "user", "content": STORY_PROMPT},
+            {
+                "role": "user",
+                "content": (
+                    "Write the overview of a Dungeons & Dragons campaign. Include lots"
+                    " of rich details, a key objective and climatic final showdown."
+                ),
+            },
         ]
 
-        result = openai_request(messages, args.model, args.temperature)
+        result = openai_request(
+            messages, args.model, 0.7, cache_buster=random.randint(0, 100)
+        )
         response_message = result["choices"][0]["message"]
         with open(args.dir + "/story.txt", "w") as f:
             f.write(response_message["content"])
