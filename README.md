@@ -8,4 +8,7 @@ Run `./setup.sh`
 
 ## Future
 
-Speech-to-text for talking to gpt https://towardsdatascience.com/easy-speech-to-text-with-python-3df0d973b426
+-   "What kind of adventure would you like to participate in?"
+-   Port to use Guidance https://github.com/microsoft/guidance
+-   Image generation for scenes
+-   Speech-to-text for talking to gpt https://towardsdatascience.com/easy-speech-to-text-with-python-3df0d973b426
