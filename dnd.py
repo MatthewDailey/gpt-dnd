@@ -1,4 +1,5 @@
 import random
+import guidance
 import openai
 import os
 import time
@@ -47,6 +48,7 @@ SEPARATOR = "==SEP=="
 openai.organization = "org-3676qVMg5QssbgHBYPtoL1DT"
 openai.api_key = os.environ["PERSONAL_OPENAI_API_KEY"]
 set_api_key(os.environ["ELEVEN_LABS_API_KEY"])
+guidance.llm = guidance.llms.OpenAI("gpt-3.5-turbo")
 
 
 @memory.cache
@@ -260,6 +262,30 @@ def ask_dm_with_loading_anim(args):
         t2.join()
 
 
+generate_story_prompt = guidance("""
+{{#system~}}
+You are masterful Dungeon Master for Dungeons & Dragons E5. You weave an artful and engaging story.
+{{~/system}}
+
+{{#user~}}
+Write the overview of a Dungeons & Dragons campaign. Include lots of rich cinematic details.
+
+The story description should be a few paragraphs long. It should include the following:
+- Title
+- An overview of the story.
+- Setting
+- Main plot points
+- Main NPCs
+- Key Objectives
+- An idea for a climactic scene.
+{{~/user}}
+
+{{#assistant~}}
+{{gen 'story' temperature=0.5}}
+{{~/assistant}}
+""")
+
+
 def generate_story(args):
     if not os.path.exists(args.dir + "/story.txt"):
         t1 = threading.Thread(
@@ -277,33 +303,9 @@ def generate_story(args):
         )
         t1.start()
         try:
-            messages = [
-                {
-                    "role": "system",
-                    "content": (
-                        "You are masterful Dungeon Master for Dungeons & Dragons E5."
-                        " You weave an artful and engaging story."
-                    ),
-                },
-                {
-                    "role": "user",
-                    "content": (
-                        "Write the overview of a Dungeons & Dragons campaign. Include"
-                        " lots of rich cinematic details. \n\nThe story description"
-                        " should include the following sections:\n- A title\n- An"
-                        " overview of the story\n- A description of the setting\n- A"
-                        " description of the key non-player characters\n- A key"
-                        " objective for the players\n- An idea for a climactic scene\n"
-                    ),
-                },
-            ]
-
-            result = openai_request(
-                messages, args.model, 0.7, cache_buster=random.randint(0, 100)
-            )
-            response_message = result["choices"][0]["message"]
+            story_result = generate_story_prompt()
             with open(args.dir + "/story.txt", "w") as f:
-                f.write(response_message["content"])
+                f.write(story_result["story"])
         finally:
             t1.do_run = False
             t1.join()
@@ -315,6 +317,9 @@ def main(args):
 
     if args.audio:
         start_background_music()
+
+    if not args.use_cache:
+        guidance.llm.cache.clear()
 
     set_up_defaults(args.dir)
     generate_story(args)
@@ -366,6 +371,13 @@ if __name__ == "__main__":
         type=bool,
         default=False,
         help="Play audio of the response",
+    )
+    parser.add_argument(
+        "-x",
+        "--use-cache",
+        type=bool,
+        default=False,
+        help="Clear cache on run",
     )
 
     main(parser.parse_args())
