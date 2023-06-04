@@ -3,10 +3,20 @@ import sys
 
 guidance.llm = guidance.llms.OpenAI("gpt-3.5-turbo")
 
+
 prompt = guidance("""
 {{#system~}}
-You are a helpful assistant
+  {{sys}}
 {{~/system}}
+
+{{~#each message_and_response}}
+  {{#user~}}
+    {{this.message}}
+  {{~/user}}
+  {{#assistant~}}
+    {{this.response}}
+  {{~/assistant}}
+{{~/each}}
 
 {{~#geneach 'conversation' stop=False}}
   {{#user~}}
@@ -14,12 +24,25 @@ You are a helpful assistant
   {{~/user}}
 
   {{#assistant~}}
-    {{gen 'response' temperature=0 max_tokens=300}}
+    {{gen 'response'}}
   {{~/assistant}}
 {{~/geneach}}
 """)
 
+message_and_response = []
+
 while True:
     user_input = sys.stdin.readline()
-    response = prompt(input=user_input)["response"]
-    print(response)
+    p = prompt(
+        sys="You are a helpful assistant",
+        message_and_response=message_and_response,
+        input=user_input,
+    )
+    print(p)
+    print(p["response"])
+    message_and_response.append(
+        {
+            "message": user_input,
+            "response": p["response"],
+        }
+    )
