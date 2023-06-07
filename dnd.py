@@ -82,11 +82,13 @@ def loading_animation(
 
     t = threading.currentThread()
     i = 0
+    print(bcolors.WARNING, end="")
     while getattr(t, "do_run", True):
         print(bar[i % len(bar)], end="\r")
         time.sleep(0.2)
         i += 1
     print(len(bar[0]) * " ", end="\r")
+    print(bcolors.ENDC, end="")
 
 
 def speaking_animation():
@@ -335,19 +337,25 @@ def main(args):
     if not args.use_cache:
         guidance.llm.cache.clear()
 
-    set_up_defaults(args.dir)
-    generate_story(args)
+    try:
+        set_up_defaults(args.dir)
+        generate_story(args)
 
-    with open(args.dir + "/prompt.txt") as f:
-        if len(f.read()) == 0:
-            print("Welcome to Dungeons & Dragons! Say 'hi' to get started.")
-            get_input_and_write_to_prompt(args)
+        with open(args.dir + "/prompt.txt") as f:
+            if len(f.read()) == 0:
+                print(
+                    f"{bcolors.OKGREEN}Welcome to Dungeons & Dragons! Say 'hi' to get"
+                    f" started.{bcolors.ENDC}"
+                )
+                get_input_and_write_to_prompt(args)
 
-    ask_dm_with_loading_anim(args)
-
-    while args.continuous:
-        get_input_and_write_to_prompt(args)
         ask_dm_with_loading_anim(args)
+
+        while args.continuous:
+            get_input_and_write_to_prompt(args)
+            ask_dm_with_loading_anim(args)
+    except KeyboardInterrupt:
+        print(f"{bcolors.OKBLUE}\n\nExiting...")
 
 
 if __name__ == "__main__":
