@@ -176,13 +176,27 @@ def get_input_and_write_to_prompt(args):
     print("\n")
 
 
+class bcolors:
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
+
 def print_slowly(text, duration):
     length = len(text)
     pause_time = float(duration) / length
 
+    print(f"{bcolors.OKGREEN}", end="")
     for char in text:
         print(char, end="", flush=True)
         time.sleep(pause_time)
+    print(f"{bcolors.ENDC}", end="")
 
 
 def play_audio(path):
