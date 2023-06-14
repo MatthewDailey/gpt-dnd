@@ -1,6 +1,5 @@
-import random
+import json
 import guidance
-import openai
 import os
 import time
 import sys
@@ -45,12 +44,14 @@ When you need information from the players or for the players to do something yo
 memory = joblib.Memory(location=".cached_data", verbose=0)
 SEPARATOR = "==SEP=="
 
-openai.organization = "org-3676qVMg5QssbgHBYPtoL1DT"
-openai.api_key = os.environ["PERSONAL_OPENAI_API_KEY"]
 set_api_key(os.environ["ELEVEN_LABS_API_KEY"])
-guidance.llm = guidance.llms.OpenAI("gpt-3.5-turbo")
+guidance.llm = guidance.llms.OpenAI(
+    "gpt-3.5-turbo",
+    organization="org-3676qVMg5QssbgHBYPtoL1DT",
+    api_key=os.environ["PERSONAL_OPENAI_API_KEY"],
+)
 
-conversation_prompt = prompt = guidance("""
+conversation_prompt = guidance("""
 {{#system~}}
   {{sys}}
 {{~/system}}
@@ -64,29 +65,72 @@ conversation_prompt = prompt = guidance("""
   {{~/assistant}}
 {{~/each}}
 
-{{~#geneach 'conversation' stop=False}}
-  {{#user~}}
-    {{set 'this.input' (await 'input')}}
-  {{~/user}}
+{{#user~}}
+  {{input}}
+{{~/user}}
 
-  {{#assistant~}}
-    {{gen 'response'}}
-  {{~/assistant}}
-{{~/geneach}}
+{{#assistant~}}
+  {{gen 'response'}}
+{{~/assistant}}
 """)
 
 
-@memory.cache
-def openai_request(messages, model, temperature, cache_buster=None):
-    # start = time.time()
-    result = openai.ChatCompletion.create(
-        model=model,
-        temperature=temperature,
-        messages=messages,
-        # max_tokens=4096,
+def read_messages(dir):
+    messages_file_path = dir + "/messages.json"
+    if (not os.path.exists(messages_file_path)) or os.path.getsize(
+        messages_file_path
+    ) == 0:
+        return []
+    with open(messages_file_path, "r") as f:
+        return json.load(f)
+
+
+def write_messages(dir, messages):
+    messages_file_path = dir + "/messages.json"
+    with open(messages_file_path, "w") as f:
+        json.dump(messages, f)
+
+
+def get_user_input():
+    print("\n\n>>> ", end="")
+    return sys.stdin.readline()
+
+
+def openai_chat(system, messages, input):
+    p = conversation_prompt(
+        sys=system,
+        message_and_response=messages,
+        input=input,
     )
-    # print(f"Total time: {time.time() - start}")
-    return result
+    return p["response"]
+
+
+def chat(dir, input):
+    messages = read_messages(dir)
+
+    with open(dir + "/system.txt") as f:
+        sys_prompt = f.read()
+
+    with open(dir + "/story.txt") as f:
+        story = f.read()
+
+    system = (
+        sys_prompt
+        + "\n\n Here is the outline for the story. Players will slowly discover"
+        " more and more detail:"
+        + story
+    )
+
+    response = openai_chat(system, messages, input)
+
+    messages.append(
+        {
+            "message": input,
+            "response": response,
+        }
+    )
+    write_messages(dir, messages)
+    return response
 
 
 def loading_animation(
@@ -142,56 +186,8 @@ def set_up_defaults(dir):
             f.write(SYSTEM_PROMPT)
 
 
-def send_prompts(args):
-    with open(args.dir + "/prompt.txt") as f:
-        prompts = f.read().split(SEPARATOR)
-
-    with open(args.dir + "/system.txt") as f:
-        sys_prompt = f.read()
-
-    with open(args.dir + "/story.txt") as f:
-        story = f.read()
-
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                sys_prompt
-                + "\n\n Here is the outline for the story. Players will slowly discover"
-                " more and more detail:"
-                + story
-            ),
-        }
-    ]
-
-    for i, prompt in enumerate(prompts):
-        messages.append(
-            {
-                "role": "user",
-                "content": prompt.strip(),
-            }
-        )
-
-        cache_buster = time.time() if args.skip_cache else None
-        result = openai_request(
-            messages, args.model, args.temperature, cache_buster=cache_buster
-        )
-
-        # write result message content to file in prompt directory
-        out_dir = args.dir + "/results"
-        os.makedirs(out_dir, exist_ok=True)
-        response_message = result["choices"][0]["message"]
-        with open(os.path.join(out_dir, f"result_{i}.txt"), "w") as f:
-            f.write(response_message["content"])
-
-        messages.append(result["choices"][0]["message"])
-
-    return messages[-1]["content"]
-
-
 def get_input_and_write_to_prompt(args):
-    print("\n\n>>> ", end="")
-    user_action = sys.stdin.readline()
+    user_action = get_user_input()
     with open(args.dir + "/prompt.txt", "r") as f:
         is_empty = len(f.read()) == 0
 
@@ -244,7 +240,6 @@ def tts_elevenlabs(text, save_to_path):
     )
     with open(save_to_path, "wb") as binary_file:
         binary_file.write(audio)
-    return MP3(save_to_path).info.length
 
 
 MUSIC_VOL = 0.7
@@ -271,36 +266,44 @@ def fade_music_in():
         time.sleep(0.1)
 
 
-def ask_dm_with_loading_anim(args):
+def play_result(args, result):
+    audio_file = args.dir + "/current.mp3"
+
+    # 50th of a second per character by default.
+    duration = len(result) / 50
+
+    if args.audio and os.path.exists(audio_file):
+        duration = MP3(audio_file).info.length
+        fade_music_out()
+        t2 = threading.Thread(target=play_audio, args=(audio_file,))
+        t2.start()
+
+    print_slowly(result, duration)
+
+    if args.audio and os.path.exists(audio_file):
+        fade_music_in()
+        t2.do_run = False
+        t2.join()
+
+
+def ask_dm_with_loading_anim(args, input):
+    audio_file = args.dir + "/current.mp3"
+
     t1 = threading.Thread(target=loading_animation)
     t1.start()
     try:
-        result = send_prompts(args)
+        result = chat(args.dir, input)
+        if args.audio:
+            tts_elevenlabs(result, audio_file)
     except Exception as e:
         print(e)
         t1.do_run = False
         t1.join()
         return
-
-    # 50th of a second per character by default.
-    duration = len(result) / 50
-
-    if args.audio:
-        audio_file = args.dir + "/current.mp3"
-        duration = tts_elevenlabs(result, audio_file)
-        fade_music_out()
-        t2 = threading.Thread(target=play_audio, args=(audio_file,))
-        t2.start()
-
     t1.do_run = False
     t1.join()
 
-    print_slowly(result, duration)
-
-    if args.audio:
-        fade_music_in()
-        t2.do_run = False
-        t2.join()
+    play_result(args, result)
 
 
 generate_story_prompt = guidance("""
@@ -366,19 +369,19 @@ def main(args):
         set_up_defaults(args.dir)
         generate_story(args)
 
-        with open(args.dir + "/prompt.txt") as f:
-            if len(f.read()) == 0:
-                print(
-                    f"{bcolors.OKGREEN}Welcome to Dungeons & Dragons! Say 'hi' to get"
-                    f" started.{bcolors.ENDC}"
-                )
-                get_input_and_write_to_prompt(args)
-
-        ask_dm_with_loading_anim(args)
+        messages = read_messages(args.dir)
+        if len(messages) == 0:
+            print(
+                f"{bcolors.OKGREEN}Welcome to Dungeons & Dragons! Say 'hi' to get"
+                f" started.{bcolors.ENDC}"
+            )
+        else:
+            last_message = messages[-1]["response"]
+            play_result(args, last_message)
 
         while args.continuous:
-            get_input_and_write_to_prompt(args)
-            ask_dm_with_loading_anim(args)
+            input = get_user_input()
+            ask_dm_with_loading_anim(args, input)
     except KeyboardInterrupt:
         print(f"{bcolors.OKBLUE}\n\nExiting...")
 
