@@ -88,12 +88,14 @@ def read_messages(dir):
 def write_messages(dir, messages):
     messages_file_path = dir + "/messages.json"
     with open(messages_file_path, "w") as f:
-        json.dump(messages, f)
+        json.dump(messages, f, indent=2)
 
 
 def get_user_input():
     print("\n\n>>> ", end="")
-    return sys.stdin.readline()
+    result = sys.stdin.readline().rstrip()
+    print("\n")
+    return result
 
 
 def openai_chat(system, messages, input):
@@ -186,19 +188,6 @@ def set_up_defaults(dir):
             f.write(SYSTEM_PROMPT)
 
 
-def get_input_and_write_to_prompt(args):
-    user_action = get_user_input()
-    with open(args.dir + "/prompt.txt", "r") as f:
-        is_empty = len(f.read()) == 0
-
-    with open(args.dir + "/prompt.txt", "a") as f:
-        if is_empty:
-            f.write(user_action)
-        else:
-            f.write("\n\n" + SEPARATOR + "\n\n" + user_action)
-    print("\n")
-
-
 class bcolors:
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
@@ -220,16 +209,6 @@ def print_slowly(text, duration):
         print(char, end="", flush=True)
         time.sleep(pause_time)
     print(f"{bcolors.ENDC}", end="")
-
-
-def play_audio(path):
-    playsound(path)
-
-
-def tts_gtts(text, save_to_path):
-    tts = gtts.gTTS(text, lang="en-uk", tld="co.uk")
-    tts.save(save_to_path)
-    return MP3(save_to_path).info.length
 
 
 def tts_elevenlabs(text, save_to_path):
@@ -275,7 +254,7 @@ def play_result(args, result):
     if args.audio and os.path.exists(audio_file):
         duration = MP3(audio_file).info.length
         fade_music_out()
-        t2 = threading.Thread(target=play_audio, args=(audio_file,))
+        t2 = threading.Thread(target=playsound, args=(audio_file,))
         t2.start()
 
     print_slowly(result, duration)

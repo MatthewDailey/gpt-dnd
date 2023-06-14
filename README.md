@@ -13,7 +13,6 @@ Prompt improvements
 -   Port to use Guidance https://github.com/microsoft/guidance
 -   "What kind of adventure would you like to participate in?"
 -   occasionaly synthesize chat to not pass whole story into the context window
--   Python type-checking
 
 Game improvements
 
