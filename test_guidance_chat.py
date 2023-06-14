@@ -18,15 +18,13 @@ prompt = guidance("""
   {{~/assistant}}
 {{~/each}}
 
-{{~#geneach 'conversation' stop=False}}
-  {{#user~}}
-    {{set 'this.input' (await 'input')}}
-  {{~/user}}
+{{#user~}}
+  {{input}}
+{{~/user}}
 
-  {{#assistant~}}
-    {{gen 'response'}}
-  {{~/assistant}}
-{{~/geneach}}
+{{#assistant~}}
+  {{gen 'response'}}
+{{~/assistant}}
 """)
 
 message_and_response = []

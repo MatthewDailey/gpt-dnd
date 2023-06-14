@@ -50,6 +50,31 @@ openai.api_key = os.environ["PERSONAL_OPENAI_API_KEY"]
 set_api_key(os.environ["ELEVEN_LABS_API_KEY"])
 guidance.llm = guidance.llms.OpenAI("gpt-3.5-turbo")
 
+conversation_prompt = prompt = guidance("""
+{{#system~}}
+  {{sys}}
+{{~/system}}
+
+{{~#each message_and_response}}
+  {{#user~}}
+    {{this.message}}
+  {{~/user}}
+  {{#assistant~}}
+    {{this.response}}
+  {{~/assistant}}
+{{~/each}}
+
+{{~#geneach 'conversation' stop=False}}
+  {{#user~}}
+    {{set 'this.input' (await 'input')}}
+  {{~/user}}
+
+  {{#assistant~}}
+    {{gen 'response'}}
+  {{~/assistant}}
+{{~/geneach}}
+""")
+
 
 @memory.cache
 def openai_request(messages, model, temperature, cache_buster=None):
