@@ -10,14 +10,13 @@ Run `./setup.sh`
 
 Prompt improvements
 
--   Port to use Guidance https://github.com/microsoft/guidance
 -   "What kind of adventure would you like to participate in?"
 -   occasionaly synthesize chat to not pass whole story into the context window
 
 Game improvements
 
--   onboarding: have pre-canned character sheets, bot knows in background but doesn't need to say all stats to player.
--   Don't fill in so many decisions, shorten DM response -> make more interactive
+-   (P1) onboarding: have pre-canned character sheets, bot knows in background but doesn't need to say all stats to player.
+-   (P2) Don't fill in so many decisions, shorten DM response -> make more interactive
 -   Write story in parallel to selecting characters.
 
 Features
