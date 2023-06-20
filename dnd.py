@@ -147,13 +147,13 @@ def set_up_defaults(dir):
             f.write(SYSTEM_PROMPT)
 
 
-def ask_dm_with_loading_anim(args, input):
+def ask_dm_with_loading_anim(args, prompt):
     audio_file = args.dir + "/current.mp3"
 
     t1 = threading.Thread(target=loading_animation)
     t1.start()
     try:
-        result = chat(args.dir, input)
+        result = prompt()
         if args.audio:
             tts_elevenlabs(result, audio_file)
     except Exception as e:
@@ -216,6 +216,47 @@ def generate_story(args):
             t1.join()
 
 
+CHARACTER_SYSTEM_PROMPT = """You are masterful Dungeon Master for Dungeons & Dragons E5. You help players create their characters.
+
+First you are warm and welcome the player to the game and then ask how many players and then suggest some starter character ideas. 
+
+You only share the high-level information about the characters such as race, class and background. You don't share the details of the characters' abilities scores."""
+
+generate_characters_prompt = guidance("""
+{{#system~}}
+{{sys}}
+{{~/system}}
+
+{{#user~}}
+Hi I'd like to play Dungeons & Dragons. I'm new to the game and I'd like some help creating a character.'
+{{~/user}}
+
+{{#assistant~}}
+{{gen 'request_num_characters' temperature=0.5}}
+{{~/assistant}}
+""")
+
+parse_number_of_characters_prompt = guidance("""
+{{#system~}}
+You are a language model that parses the number of characters the user wants to create from a response.
+
+You respond with either a number (for example 1, 2, 3, 4) or "Unknown" if you cannot determine the number of characters.
+{{~/system}}
+
+{{#user~}}
+{{input}}
+{{~/user}}
+
+{{#assistant~}}
+{{gen 'parse_number_of_characters' temperature=0}}
+{{~/assistant}}
+""")
+
+
+def generate_characters(args):
+    messages = []
+
+
 def main(args):
     if "PERSONAL_OPENAI_API_KEY" not in os.environ:
         raise ValueError("OPENAI_API_KEY not set")
@@ -242,7 +283,11 @@ def main(args):
 
         while args.continuous:
             input = get_user_input()
-            ask_dm_with_loading_anim(args, input)
+
+            def p():
+                return chat(args.dir, input)
+
+            ask_dm_with_loading_anim(args, p)
     except KeyboardInterrupt:
         print(f"{bcolors.OKBLUE}\n\nExiting...")
 
