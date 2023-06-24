@@ -114,17 +114,7 @@ def chat(dir, input):
     messages = read_messages(dir)
 
     with open(dir + "/system.txt") as f:
-        sys_prompt = f.read()
-
-    with open(dir + "/story.txt") as f:
-        story = f.read()
-
-    system = (
-        sys_prompt
-        + "\n\n Here is the outline for the story. Players will slowly discover"
-        " more and more detail:"
-        + story
-    )
+        system = f.read()
 
     response = openai_chat(system, messages, input)
 
@@ -136,16 +126,6 @@ def chat(dir, input):
     )
     write_messages(dir, messages)
     return response
-
-
-def set_up_defaults(dir):
-    os.makedirs(dir, exist_ok=True)
-    if not os.path.exists(dir + "/prompt.txt"):
-        with open(dir + "/prompt.txt", "w") as f:
-            f.write("")
-    if not os.path.exists(dir + "/system.txt"):
-        with open(dir + "/system.txt", "w") as f:
-            f.write(SYSTEM_PROMPT)
 
 
 def run_for_result_with_loading_anim(args, prompt):
@@ -217,16 +197,21 @@ def generate_story(args):
             t1.join()
 
 
-CHARACTER_SYSTEM_PROMPT = """You are masterful Dungeon Master for Dungeons & Dragons E5. You generate characters for players."""
-
-CHARACTER_INITIAL_INPUT = (
-    "Hi I'd like to play Dungeons & Dragons. I'd like some help creating characters."
+CHARACTER_SYSTEM_PROMPT = (
+    "You are masterful Dungeon Master for Dungeons & Dragons E5. You generate"
+    " characters for players."
 )
+
+CHARACTER_INITIAL_INPUT = "Hi I'd like to play Dungeons & Dragons."
 
 CHARACTER_INITIAL_RESPONSE = (
     "Hello! Welcome to the world of Dungeons & Dragons! I'll be your Dungeon Master."
     " Before we get started, how many players do you have in your group? Just type a"
     " number."
+)
+
+CHARACTER_SETUP_RESPONSE = (
+    "Wonderful! Give me a moment to generate your characters and set up your game."
 )
 
 generate_characters_prompt = guidance("""
@@ -285,8 +270,16 @@ def generate_characters_and_story(args):
     t1 = threading.Thread(target=gen_story, args=[args.dir])
     t1.start()
 
+    messages = []
+
     if not os.path.exists(args.dir + "/characters.txt"):
         play_result(args, CHARACTER_INITIAL_RESPONSE)
+        messages.append(
+            {
+                "message": CHARACTER_INITIAL_INPUT,
+                "response": CHARACTER_INITIAL_RESPONSE,
+            }
+        )
         num_characters = None
 
         while num_characters is None:
@@ -296,13 +289,7 @@ def generate_characters_and_story(args):
                 play_result(args, "Please enter a number.")
                 continue
 
-        play_result(
-            args,
-            (
-                "Wonderful! Give me a second to generate your characters and set up"
-                " your game."
-            ),
-        )
+        play_result(args, CHARACTER_SETUP_RESPONSE)
         print("\n\n")
 
         def try_to_get_num_chars():
@@ -319,9 +306,38 @@ def generate_characters_and_story(args):
                 time.sleep(0.1)
             t1.join()
 
+            messages.append(
+                {
+                    "message": str(num_characters),
+                    "response": CHARACTER_SETUP_RESPONSE + "\n\n" + r["characters"],
+                }
+            )
+
             return r["characters"]
 
         run_for_result_with_loading_anim(args, try_to_get_num_chars)
+        write_messages(args.dir, messages)
+
+
+def write_system_prompt(dir):
+    with open(dir + "/story.txt") as f:
+        story = f.read()
+
+    with open(dir + "/characters.txt") as f:
+        characters = f.read()
+
+    system = (
+        SYSTEM_PROMPT
+        + "\n\n Here is the outline for the story. Players will slowly discover"
+        " more and more detail:"
+        + story
+        + "\n\n Here is the list of characters:"
+        + characters
+    )
+
+    if not os.path.exists(dir + "/system.txt"):
+        with open(dir + "/system.txt", "w") as f:
+            f.write(system)
 
 
 def main(args):
@@ -335,19 +351,14 @@ def main(args):
         guidance.llm.cache.clear()
 
     try:
-        set_up_defaults(args.dir)
-        generate_characters_and_story(args)
+        preexisting_messages = read_messages(args.dir)
 
-        return
-        # TODO: connect story and characters to initial messages.
-        messages = read_messages(args.dir)
-        if len(messages) == 0:
-            print(
-                f"{bcolors.OKGREEN}Welcome to Dungeons & Dragons! Say 'hi' to get"
-                f" started.{bcolors.ENDC}"
-            )
-        else:
-            last_message = messages[-1]["response"]
+        os.makedirs(args.dir, exist_ok=True)
+        generate_characters_and_story(args)
+        write_system_prompt(args.dir)
+
+        if len(preexisting_messages) != 0:
+            last_message = preexisting_messages[-1]["response"]
             play_result(args, last_message)
 
         while args.continuous:
@@ -357,6 +368,7 @@ def main(args):
                 return chat(args.dir, input)
 
             run_for_result_with_loading_anim(args, p)
+
     except KeyboardInterrupt:
         print(f"{bcolors.OKBLUE}\n\nExiting...")
 
