@@ -220,9 +220,15 @@ generate_characters_prompt = guidance("""
 {{~/system}}
 
 {{#user~}}
-Hi I'd like to play Dungeons & Dragons. I'll be playing with {{num_players}} players. Help me create {{num_players}} characters for them.
+Hi I'd like to play Dungeons & Dragons. I'll be playing with {{num_players}} players. Help me create {{num_players}} characters for them. Start by listing out 10 different combinations for race and class we could play as.
+{{~/user}}
 
-Create fully fledged Dungeons & Dragons characters for each player including back story and stats. Make sure the names are fun and unique and the backstories are vivid. These should be in the following format:
+{{#assistant~}}
+{{gen 'race_and_class' temperature=0.7}}
+{{~/assistant}}
+
+{{#user~}}
+Now choose {{num_players}} options from that list at random and create fully fledged Dungeons & Dragons characters for each including back story and stats. Make sure the names are fun and unique and the backstories are vivid. These should be in the following format:
 json```
 [
    {
@@ -242,7 +248,7 @@ Respond only with the JSON list of characters.
 {{~/user}}
 
 {{#assistant~}}
-{{gen 'characters_json' temperature=0 max_tokens=2000}}
+{{gen 'characters_json' temperature=0.5 max_tokens=2000}}
 {{~/assistant}}
 
 {{#user~}}
@@ -296,7 +302,6 @@ def generate_characters_and_story(args):
             r = generate_characters_prompt(
                 sys=CHARACTER_SYSTEM_PROMPT, num_players=num_characters
             )
-
             character_json = r["characters_json"]
             with open(args.dir + "/characters.txt", "w") as f:
                 f.write(character_json)
