@@ -1,4 +1,5 @@
 import json
+import time
 import guidance
 import os
 
@@ -147,7 +148,7 @@ def set_up_defaults(dir):
             f.write(SYSTEM_PROMPT)
 
 
-def ask_dm_with_loading_anim(args, prompt):
+def run_for_result_with_loading_anim(args, prompt):
     audio_file = args.dir + "/current.mp3"
 
     t1 = threading.Thread(target=loading_animation)
@@ -161,7 +162,6 @@ def ask_dm_with_loading_anim(args, prompt):
         t1.do_run = False
         t1.join()
         raise e
-        return
     t1.do_run = False
     t1.join()
 
@@ -274,10 +274,21 @@ Finish your response by asking if I'm ready to start the game.
 """)
 
 
-def generate_characters(args):
+def gen_story(dir):
+    if not os.path.exists(dir + "/story.txt"):
+        story_result = generate_story_prompt()
+        with open(dir + "/story.txt", "w") as f:
+            f.write(story_result["story"])
+
+
+def generate_characters_and_story(args):
+    t1 = threading.Thread(target=gen_story, args=[args.dir])
+    t1.start()
+
     if not os.path.exists(args.dir + "/characters.txt"):
         play_result(args, CHARACTER_INITIAL_RESPONSE)
         num_characters = None
+
         while num_characters is None:
             try:
                 num_characters = int(get_user_input())
@@ -303,9 +314,14 @@ def generate_characters(args):
             with open(args.dir + "/characters.txt", "w") as f:
                 f.write(character_json)
 
+            # Wait for gen_story to finish before returning result
+            while not os.path.exists(args.dir + "/story.txt"):
+                time.sleep(0.1)
+            t1.join()
+
             return r["characters"]
 
-        ask_dm_with_loading_anim(args, try_to_get_num_chars)
+        run_for_result_with_loading_anim(args, try_to_get_num_chars)
 
 
 def main(args):
@@ -320,10 +336,10 @@ def main(args):
 
     try:
         set_up_defaults(args.dir)
-        generate_characters(args)
-        return
-        generate_story(args)
+        generate_characters_and_story(args)
 
+        return
+        # TODO: connect story and characters to initial messages.
         messages = read_messages(args.dir)
         if len(messages) == 0:
             print(
@@ -340,7 +356,7 @@ def main(args):
             def p():
                 return chat(args.dir, input)
 
-            ask_dm_with_loading_anim(args, p)
+            run_for_result_with_loading_anim(args, p)
     except KeyboardInterrupt:
         print(f"{bcolors.OKBLUE}\n\nExiting...")
 
