@@ -48,7 +48,7 @@ SEPARATOR = "==SEP=="
 
 
 guidance.llm = guidance.llms.OpenAI(
-    "gpt-3.5-turbo",
+    "gpt-3.5-turbo-16k",
     organization="org-3676qVMg5QssbgHBYPtoL1DT",
     api_key=os.environ["PERSONAL_OPENAI_API_KEY"],
 )
@@ -157,9 +157,10 @@ def ask_dm_with_loading_anim(args, prompt):
         if args.audio:
             tts_elevenlabs(result, audio_file)
     except Exception as e:
-        print(e)
+        print("Exception:", e)
         t1.do_run = False
         t1.join()
+        raise e
         return
     t1.do_run = False
     t1.join()
@@ -216,11 +217,17 @@ def generate_story(args):
             t1.join()
 
 
-CHARACTER_SYSTEM_PROMPT = """You are masterful Dungeon Master for Dungeons & Dragons E5. You help players create their characters.
+CHARACTER_SYSTEM_PROMPT = """You are masterful Dungeon Master for Dungeons & Dragons E5. You generate characters for players."""
 
-First you are warm and welcome the player to the game and then ask how many players and then suggest some starter character ideas. 
+CHARACTER_INITIAL_INPUT = (
+    "Hi I'd like to play Dungeons & Dragons. I'd like some help creating characters."
+)
 
-You only share the high-level information about the characters such as race, class and background. You don't share the details of the characters' abilities scores."""
+CHARACTER_INITIAL_RESPONSE = (
+    "Hello! Welcome to the world of Dungeons & Dragons! I'll be your Dungeon Master."
+    " Before we get started, how many players do you have in your group? Just type a"
+    " number."
+)
 
 generate_characters_prompt = guidance("""
 {{#system~}}
@@ -228,33 +235,77 @@ generate_characters_prompt = guidance("""
 {{~/system}}
 
 {{#user~}}
-Hi I'd like to play Dungeons & Dragons. I'm new to the game and I'd like some help creating a character.'
+Hi I'd like to play Dungeons & Dragons. I'll be playing with {{num_players}} players. Help me create {{num_players}} characters for them.
+
+Create fully fledged Dungeons & Dragons characters for each player including back story and stats. Make sure the names are fun and unique and the backstories are vivid. These should be in the following format:
+json```
+[
+   {
+       name: ...,
+       class: ...,
+       race: ...,
+       backstory: ...,
+       equipment: ...,
+       skills: [...],
+       ability_scores: {...}
+    },
+    ...
+]
+
+Respond only with the JSON list of characters.
+```
 {{~/user}}
 
 {{#assistant~}}
-{{gen 'request_num_characters' temperature=0.5}}
+{{gen 'characters_json' temperature=0 max_tokens=2000}}
 {{~/assistant}}
-""")
-
-parse_number_of_characters_prompt = guidance("""
-{{#system~}}
-You are a language model that parses the number of characters the user wants to create from a response.
-
-You respond with either a number (for example 1, 2, 3, 4) or "Unknown" if you cannot determine the number of characters.
-{{~/system}}
 
 {{#user~}}
-{{input}}
+Now synthesize the characters and explain the key features of each character to me. Do not include ability scores.
+
+Start your response with "Okay! here are your characters:"
+
+Finish your response by asking if I'm ready to start the game.
 {{~/user}}
 
 {{#assistant~}}
-{{gen 'parse_number_of_characters' temperature=0}}
+{{gen 'characters' temperature=0}}
 {{~/assistant}}
 """)
 
 
 def generate_characters(args):
-    messages = []
+    if not os.path.exists(args.dir + "/characters.txt"):
+        play_result(args, CHARACTER_INITIAL_RESPONSE)
+        num_characters = None
+        while num_characters is None:
+            try:
+                num_characters = int(get_user_input())
+            except ValueError:
+                play_result(args, "Please enter a number.")
+                continue
+
+        play_result(
+            args,
+            (
+                "Wonderful! Give me a second to generate your characters and set up"
+                " your game."
+            ),
+        )
+        print("\n\n")
+
+        def try_to_get_num_chars():
+            r = generate_characters_prompt(
+                sys=CHARACTER_SYSTEM_PROMPT, num_players=num_characters
+            )
+
+            character_json = r["characters_json"]
+            with open(args.dir + "/characters.txt", "w") as f:
+                f.write(character_json)
+
+            return r["characters"]
+
+        ask_dm_with_loading_anim(args, try_to_get_num_chars)
 
 
 def main(args):
@@ -269,6 +320,8 @@ def main(args):
 
     try:
         set_up_defaults(args.dir)
+        generate_characters(args)
+        return
         generate_story(args)
 
         messages = read_messages(args.dir)
